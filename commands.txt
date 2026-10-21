@@ -1,0 +1,30 @@
+# Перейти в папку проекта
+cd /workspaces/codespaces-blank
+
+# Статическая библиотека
+mkdir -p static_build
+g++ -std=c++17 -Wall -Wextra -pedantic -c PriceCalculator.cpp -o static_build/PriceCalculator.o
+ar rcs static_build/libprice.a static_build/PriceCalculator.o
+g++ -std=c++17 -Wall -Wextra -pedantic main.cpp static_build/libprice.a -o static_build/a.out
+./static_build/a.out 120.5 3
+
+# Динамическая библиотека и основная программа
+mkdir -p dynamic_build
+g++ -std=c++17 -Wall -Wextra -pedantic -fPIC -c PriceCalculator.cpp -o dynamic_build/PriceCalculator.o
+g++ -shared dynamic_build/PriceCalculator.o -o dynamic_build/libprice.so
+g++ -std=c++17 -Wall -Wextra -pedantic main.cpp -L./dynamic_build -lprice -o a.out
+
+# Путь к динамической библиотеке
+export LD_LIBRARY_PATH="$PWD/dynamic_build"
+echo "$LD_LIBRARY_PATH"
+
+# Проверка подключения и запуски
+ldd ./a.out
+./a.out 120.5 3
+./a.out 100 5
+./a.out 19.99 10
+
+# После изменения только PriceCalculator.cpp пересобрать только библиотеку
+g++ -std=c++17 -Wall -Wextra -pedantic -fPIC -c PriceCalculator.cpp -o dynamic_build/PriceCalculator.o
+g++ -shared dynamic_build/PriceCalculator.o -o dynamic_build/libprice.so
+./a.out 100 5
